@@ -6,6 +6,7 @@ import com.jesper.seckill.bean.User;
 import com.jesper.seckill.mapper.OrderMapper;
 import com.jesper.seckill.redis.OrderKey;
 import com.jesper.seckill.redis.RedisService;
+import com.jesper.seckill.util.UUIDUtil;
 import com.jesper.seckill.vo.GoodsVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,14 +35,18 @@ public class OrderService {
     }
 
     /**
-     * 因为要同时分别在订单详情表和秒杀订单表都新增一条数据，所以要保证两个操作是一个事物
+     * 因为要同时分别在订单详情表和秒杀订单表都新增一条数据，所以要保证两个操作是一个事务
      */
     @Transactional
     public OrderInfo createOrder(User user, GoodsVo goods) {
         OrderInfo orderInfo = new OrderInfo();
+
+        //使用雪花算法生成唯一订单号
+        orderInfo.setId(UUIDUtil.getSnowflakeId());
         orderInfo.setCreateDate(new Date());
         orderInfo.setDeliveryAddrId(0L);
         orderInfo.setGoodsCount(1);
+        System.out.println("orderInfo.getId() = " + orderInfo.getId());
         orderInfo.setGoodsId(goods.getId());
         orderInfo.setGoodsName(goods.getGoodsName());
         orderInfo.setGoodsPrice(goods.getGoodsPrice());
@@ -49,6 +54,8 @@ public class OrderService {
         orderInfo.setStatus(0);
         orderInfo.setUserId(user.getId());
         orderMapper.insert(orderInfo);
+
+        System.out.println("orderInfo.getId() = " + orderInfo.getId());
 
         SeckillOrder seckillOrder = new SeckillOrder();
         seckillOrder.setGoodsId(goods.getId());
