@@ -83,6 +83,7 @@ public class SeckillController implements InitializingBean {
         if (over) {
             return Result.error(CodeMsg.SECKILL_OVER);
         }
+
         //预减库存
         long stock = redisService.decr(GoodsKey.getGoodsStock, "" + goodsId);//10
         if (stock < 0) {
